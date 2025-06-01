@@ -37,8 +37,7 @@ def index():
     return render_template('index.html')
 
 # Create database tables
-@app.before_first_request
-def create_tables():
+with app.app_context():
     db.create_all()
     # Create admin user if not exists
     admin = User.query.filter_by(username='admin').first()
