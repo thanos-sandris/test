@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+
+{% block title %}Attempt Details - Quiz Website{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2>Attempt Details</h2>
+            <a href="{{ url_for('admin.results') }}" class="btn btn-primary">Back to Results</a>
+        </div>
+        <hr>
+        
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h4>Attempt Information</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>User:</strong> {{ attempt.user.username }}</p>
+                        <p><strong>Quiz:</strong> {{ attempt.quiz.title }}</p>
+                        <p><strong>Start Time:</strong> {{ attempt.start_time.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+                        <p><strong>End Time:</strong> 
+                            {% if attempt.end_time %}
+                                {{ attempt.end_time.strftime('%Y-%m-%d %H:%M:%S') }}
+                            {% else %}
+                                In Progress
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Status:</strong> 
+                            {% if attempt.is_completed %}
+                                <span class="badge bg-success">Completed</span>
+                            {% elif attempt.was_left_early %}
+                                <span class="badge bg-warning">Left Early</span>
+                            {% else %}
+                                <span class="badge bg-info">In Progress</span>
+                            {% endif %}
+                        </p>
+                        
+                        {% if attempt.end_time and attempt.start_time %}
+                            <p><strong>Total Time:</strong> 
+                                {{ (attempt.end_time - attempt.start_time).total_seconds()|int // 60 }} minutes, 
+                                {{ (attempt.end_time - attempt.start_time).total_seconds()|int % 60 }} seconds
+                            </p>
+                        {% endif %}
+                        
+                        <p><strong>Questions Answered:</strong> {{ answers|selectattr('is_skipped', 'equalto', false)|list|length }}/{{ answers|length }}</p>
+                        <p><strong>Correct Answers:</strong> {{ answers|selectattr('is_correct', 'equalto', true)|list|length }}/{{ answers|length }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4>Answer Details</h4>
+            </div>
+            <div class="card-body">
+                {% if answers %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Question</th>
+                                    <th>Selected Answer</th>
+                                    <th>Status</th>
+                                    <th>Time Taken</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for answer in answers %}
+                                    <tr>
+                                        <td>{{ loop.index }}</td>
+                                        <td>{{ answer.question.question_text }}</td>
+                                        <td>
+                                            {% if answer.is_skipped %}
+                                                <em>Skipped</em>
+                                            {% else %}
+                                                {{ answer.selected_option.option_text if answer.selected_option else 'No selection' }}
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if answer.is_skipped %}
+                                                <span class="badge bg-secondary">Skipped</span>
+                                            {% elif answer.is_correct %}
+                                                <span class="badge bg-success">Correct</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Incorrect</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if answer.time_taken_seconds %}
+                                                {{ answer.time_taken_seconds }} seconds
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        <p>No answers recorded for this attempt.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Question - Quiz Website{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h3>Edit Question</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('admin.edit_question', question_id=question.id) }}">
+                    <div class="mb-3">
+                        <label for="question_text" class="form-label">Question Text</label>
+                        <textarea class="form-control" id="question_text" name="question_text" rows="3" required>{{ question.question_text }}</textarea>
+                    </div>
+                    
+                    <h4 class="mt-4">Options</h4>
+                    <p class="text-muted">Edit options and mark one as correct.</p>
+                    
+                    {% for option in question.options %}
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <div class="input-group-text">
+                                    <input class="form-check-input mt-0" type="radio" name="correct_option" value="{{ option.id }}" {% if option.is_correct %}checked{% endif %} required>
+                                </div>
+                                <input type="text" class="form-control" id="option_{{ option.id }}" name="option_{{ option.id }}" value="{{ option.option_text }}" required>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('admin.questions', quiz_id=quiz.id) }}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-success">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+
+{% block title %}Quiz Results - {{ quiz.title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-10 offset-md-1">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h3>Quiz Results: {{ quiz.title }}</h3>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h4>Summary</h4>
+                        <ul class="list-group">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Total Questions
+                                <span class="badge bg-primary rounded-pill">{{ total_questions }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Answered Questions
+                                <span class="badge bg-primary rounded-pill">{{ answered_questions }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Correct Answers
+                                <span class="badge bg-success rounded-pill">{{ correct_answers }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Skipped Questions
+                                <span class="badge bg-warning rounded-pill">{{ skipped_questions }}</span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Score
+                                <span class="badge bg-info rounded-pill">{{ (correct_answers / total_questions * 100)|round|int }}%</span>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h4>Quiz Information</h4>
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <strong>Start Time:</strong> {{ attempt.start_time.strftime('%Y-%m-%d %H:%M:%S') }}
+                            </li>
+                            <li class="list-group-item">
+                                <strong>End Time:</strong> {{ attempt.end_time.strftime('%Y-%m-%d %H:%M:%S') if attempt.end_time else 'In Progress' }}
+                            </li>
+                            <li class="list-group-item">
+                                <strong>Status:</strong>
+                                {% if attempt.is_completed %}
+                                    <span class="badge bg-success">Completed</span>
+                                {% elif attempt.was_left_early %}
+                                    <span class="badge bg-warning">Left Early</span>
+                                {% else %}
+                                    <span class="badge bg-info">In Progress</span>
+                                {% endif %}
+                            </li>
+                            {% if attempt.end_time and attempt.start_time %}
+                                <li class="list-group-item">
+                                    <strong>Total Time:</strong>
+                                    {{ (attempt.end_time - attempt.start_time).total_seconds()|int // 60 }} minutes,
+                                    {{ (attempt.end_time - attempt.start_time).total_seconds()|int % 60 }} seconds
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
+                
+                <h4>Detailed Results</h4>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Question</th>
+                                <th>Your Answer</th>
+                                <th>Correct Answer</th>
+                                <th>Result</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for answer in answers %}
+                                <tr>
+                                    <td>{{ loop.index }}</td>
+                                    <td>{{ answer.question.question_text }}</td>
+                                    <td>
+                                        {% if answer.is_skipped %}
+                                            <em>Skipped</em>
+                                        {% else %}
+                                            {{ answer.selected_option.option_text if answer.selected_option else 'No selection' }}
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% for option in answer.question.options %}
+                                            {% if option.is_correct %}
+                                                {{ option.option_text }}
+                                            {% endif %}
+                                        {% endfor %}
+                                    </td>
+                                    <td>
+                                        {% if answer.is_skipped %}
+                                            <span class="badge bg-secondary">Skipped</span>
+                                        {% elif answer.is_correct %}
+                                            <span class="badge bg-success">Correct</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Incorrect</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ answer.time_taken_seconds }} seconds</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="d-grid gap-2 col-6 mx-auto mt-4">
+                    <a href="{{ url_for('quiz.list') }}" class="btn btn-primary">Back to Quizzes</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

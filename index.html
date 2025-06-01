@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - Quiz Website{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h2 class="text-center">Welcome to Quiz Website</h2>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <h4>Test your knowledge with our interactive quizzes!</h4>
+                    <p class="lead">Challenge yourself with timed questions and track your progress.</p>
+                </div>
+                
+                {% if current_user.is_authenticated %}
+                    {% if current_user.is_approved or current_user.is_admin %}
+                        <div class="d-grid gap-2 col-6 mx-auto">
+                            <a href="{{ url_for('quiz.list') }}" class="btn btn-primary btn-lg">Start a Quiz</a>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            <p class="mb-0">Your account is pending approval by an administrator. Please check back later.</p>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="d-grid gap-2">
+                                <a href="{{ url_for('auth.login') }}" class="btn btn-primary btn-lg">Login</a>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-grid gap-2">
+                                <a href="{{ url_for('auth.register') }}" class="btn btn-outline-primary btn-lg">Register</a>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

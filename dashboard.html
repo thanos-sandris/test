@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard - Quiz Website{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h2>Admin Dashboard</h2>
+        <hr>
+        
+        <div class="row">
+            <div class="col-md-3">
+                <div class="card text-white bg-primary mb-3">
+                    <div class="card-header">Pending Approvals</div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ pending_users }}</h5>
+                        <p class="card-text">Users waiting for approval</p>
+                        <a href="{{ url_for('admin.pending_users') }}" class="btn btn-light btn-sm">View All</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card text-white bg-success mb-3">
+                    <div class="card-header">Total Users</div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ total_users }}</h5>
+                        <p class="card-text">Registered users</p>
+                        <a href="{{ url_for('admin.users') }}" class="btn btn-light btn-sm">View All</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card text-white bg-info mb-3">
+                    <div class="card-header">Quizzes</div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ total_quizzes }}</h5>
+                        <p class="card-text">Available quizzes</p>
+                        <a href="{{ url_for('admin.quizzes') }}" class="btn btn-light btn-sm">View All</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="card text-white bg-warning mb-3">
+                    <div class="card-header">Quiz Attempts</div>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ total_attempts }}</h5>
+                        <p class="card-text">Total quiz attempts</p>
+                        <a href="{{ url_for('admin.results') }}" class="btn btn-light btn-sm">View All</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Quick Actions</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="list-group">
+                            <a href="{{ url_for('admin.pending_users') }}" class="list-group-item list-group-item-action">
+                                <i class="bi bi-person-check"></i> Approve User Registrations
+                            </a>
+                            <a href="{{ url_for('admin.new_quiz') }}" class="list-group-item list-group-item-action">
+                                <i class="bi bi-plus-circle"></i> Create New Quiz
+                            </a>
+                            <a href="{{ url_for('admin.results') }}" class="list-group-item list-group-item-action">
+                                <i class="bi bi-bar-chart"></i> View Quiz Results
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>System Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Admin Account:</strong> {{ current_user.username }}</p>
+                        <p><strong>Server Time:</strong> <span id="server-time"></span></p>
+                        <p><strong>Database Status:</strong> <span class="badge bg-success">Connected</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Update server time
+    function updateServerTime() {
+        const now = new Date();
+        document.getElementById('server-time').textContent = now.toLocaleString();
+    }
+    
+    updateServerTime();
+    setInterval(updateServerTime, 1000);
+</script>
+{% endblock %}

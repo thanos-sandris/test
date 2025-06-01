@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}New Question - {{ quiz.title }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h3>Add New Question to "{{ quiz.title }}"</h3>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('admin.new_question', quiz_id=quiz.id) }}">
+                    <div class="mb-3">
+                        <label for="question_text" class="form-label">Question Text</label>
+                        <textarea class="form-control" id="question_text" name="question_text" rows="3" required></textarea>
+                    </div>
+                    
+                    <h4 class="mt-4">Options</h4>
+                    <p class="text-muted">Add at least 2 options and mark one as correct.</p>
+                    
+                    {% for i in range(1, 5) %}
+                        <div class="mb-3">
+                            <div class="input-group">
+                                <div class="input-group-text">
+                                    <input class="form-check-input mt-0" type="radio" name="correct_option" value="{{ i }}" {% if i == 1 %}required{% endif %}>
+                                </div>
+                                <input type="text" class="form-control" id="option_{{ i }}" name="option_{{ i }}" placeholder="Option {{ i }}" {% if i <= 2 %}required{% endif %}>
+                            </div>
+                            {% if i <= 2 %}
+                                <div class="form-text">This option is required</div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{{ url_for('admin.questions', quiz_id=quiz.id) }}" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-success">Add Question</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,191 @@
+{% extends 'base.html' %}
+
+{% block title %}Taking Quiz - {{ quiz.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .timer-container {
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+    
+    .timer-warning {
+        color: #dc3545;
+        animation: pulse 1s infinite;
+    }
+    
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+    
+    .option-card {
+        cursor: pointer;
+        transition: all 0.3s;
+        margin-bottom: 10px;
+    }
+    
+    .option-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .option-selected {
+        border: 2px solid #0d6efd;
+        background-color: #e7f1ff;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-10 offset-md-1">
+        <div class="card">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h3>Question {{ question.order_num }}</h3>
+                <div class="timer-container">
+                    Time: <span id="timer">30</span>s
+                </div>
+            </div>
+            <div class="card-body">
+                <h4 class="mb-4">{{ question.question_text }}</h4>
+                
+                <div class="options-container mb-4">
+                    {% for option in question.options %}
+                        <div class="card option-card" data-option-id="{{ option.id }}">
+                            <div class="card-body">
+                                {{ option.option_text }}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="d-flex justify-content-between mt-4">
+                    <button id="skip-btn" class="btn btn-warning">Skip Question</button>
+                    <button id="leave-btn" class="btn btn-danger">Leave Quiz</button>
+                    <button id="submit-btn" class="btn btn-success" disabled>Submit Answer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<input type="hidden" id="quiz-id" value="{{ quiz.id }}">
+<input type="hidden" id="attempt-id" value="{{ attempt.id }}">
+<input type="hidden" id="question-id" value="{{ question.id }}">
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Variables
+        const quizId = document.getElementById('quiz-id').value;
+        const attemptId = document.getElementById('attempt-id').value;
+        const questionId = document.getElementById('question-id').value;
+        const timerElement = document.getElementById('timer');
+        const submitBtn = document.getElementById('submit-btn');
+        const skipBtn = document.getElementById('skip-btn');
+        const leaveBtn = document.getElementById('leave-btn');
+        const optionCards = document.querySelectorAll('.option-card');
+        
+        let selectedOptionId = null;
+        let timeLeft = 30;
+        let startTime = new Date().getTime();
+        
+        // Timer function
+        const timerInterval = setInterval(function() {
+            timeLeft--;
+            timerElement.textContent = timeLeft;
+            
+            // Warning when time is running out
+            if (timeLeft <= 10) {
+                timerElement.classList.add('timer-warning');
+            }
+            
+            // Auto-submit when time runs out
+            if (timeLeft <= 0) {
+                clearInterval(timerInterval);
+                if (selectedOptionId) {
+                    submitAnswer('answer');
+                } else {
+                    submitAnswer('skip');
+                }
+            }
+        }, 1000);
+        
+        // Option selection
+        optionCards.forEach(card => {
+            card.addEventListener('click', function() {
+                // Remove selection from all cards
+                optionCards.forEach(c => c.classList.remove('option-selected'));
+                
+                // Add selection to clicked card
+                this.classList.add('option-selected');
+                
+                // Store selected option ID
+                selectedOptionId = this.dataset.optionId;
+                
+                // Enable submit button
+                submitBtn.disabled = false;
+            });
+        });
+        
+        // Submit answer
+        submitBtn.addEventListener('click', function() {
+            submitAnswer('answer');
+        });
+        
+        // Skip question
+        skipBtn.addEventListener('click', function() {
+            submitAnswer('skip');
+        });
+        
+        // Leave quiz
+        leaveBtn.addEventListener('click', function() {
+            if (confirm('Are you sure you want to leave this quiz? Your progress will be saved.')) {
+                submitAnswer('leave');
+            }
+        });
+        
+        // Function to submit answer
+        function submitAnswer(action) {
+            // Clear timer
+            clearInterval(timerInterval);
+            
+            // Calculate time taken
+            const endTime = new Date().getTime();
+            const timeTaken = Math.round((endTime - startTime) / 1000);
+            
+            // Prepare data
+            const data = {
+                question_id: questionId,
+                option_id: selectedOptionId,
+                time_taken: timeTaken,
+                action: action
+            };
+            
+            // Send answer to server
+            fetch(`/quiz/${quizId}/answer/${attemptId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    window.location.href = data.redirect;
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            });
+        }
+    });
+</script>
+{% endblock %}
